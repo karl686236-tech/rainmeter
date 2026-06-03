@@ -31,7 +31,7 @@ jobs:
 
   installer:
     needs: rainmeter
-    runs-on: windows-2022
+    runs-on: windows-2025
     steps:
       - name: Clone repo
         uses: actions/checkout@v5
@@ -42,7 +42,7 @@ jobs:
           pattern: x*-Release
 
       - name: Install NSIS
-        run: choco install nsis --version=3.12.0 --no-progress
+        run: winget install -e --id NSIS.NSIS --version 3.12 --silent
 
       - name: Build installer
         run: cd Build && Build.bat installer %date:~-4%.%date:~4,2%.%date:~7,2%.%GITHUB_RUN_NUMBER%
