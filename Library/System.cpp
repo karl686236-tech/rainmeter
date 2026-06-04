@@ -293,11 +293,6 @@ UINT System::GetDpiForWindow(HWND window)
 	return GetSystemDpi();
 }
 
-UINT System::GetDpiForRect(const RECT& rect)
-{
-	return System::GetDpiForMonitor(MonitorFromRect(&rect, MONITOR_DEFAULTTONEAREST));
-}
-
 float System::GetDpiScaleForMonitor(HMONITOR monitor)
 {
 	return (float)System::GetDpiForMonitor(monitor) / (float)DPI_DEFAULT;
@@ -306,11 +301,6 @@ float System::GetDpiScaleForMonitor(HMONITOR monitor)
 float System::GetDpiScaleForWindow(HWND window)
 {
 	return (float)System::GetDpiForWindow(window) / (float)DPI_DEFAULT;
-}
-
-float System::GetDpiScaleForRect(const RECT& rect)
-{
-	return (float)GetDpiForRect(rect) / (float)DPI_DEFAULT;
 }
 
 /*

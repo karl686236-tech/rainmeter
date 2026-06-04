@@ -44,12 +44,11 @@ public:
 
 	static const MultiMonitorInfo& GetMultiMonitorInfo() { return c_Monitors; }
 	static size_t GetMonitorCount();
+
 	static UINT GetDpiForMonitor(HMONITOR monitor);
 	static UINT GetDpiForWindow(HWND window);
-	static UINT GetDpiForRect(const RECT& rect);
 	static float GetDpiScaleForMonitor(HMONITOR monitor);
 	static float GetDpiScaleForWindow(HWND window);
-	static float GetDpiScaleForRect(const RECT& rect);
 
 	static bool GetShowDesktop() { return c_ShowDesktop; }
 
