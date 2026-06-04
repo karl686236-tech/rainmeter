@@ -41,6 +41,7 @@ public:
 	virtual const WCHAR* GetStringValue();
 	virtual void Command(const std::wstring& command);
 
+	bool IsDPIAware() const { return m_DPIAware; }
 	bool CommandWithReturn(const std::wstring& command, std::wstring& strValue, void* delayedLogEntry = nullptr);
 
 protected:
@@ -48,9 +49,10 @@ protected:
 	virtual void UpdateValue();
 
 private:
-	bool IsNewApi() { return m_ReloadFunc != nullptr; }
+	bool IsNewApi() const { return m_ReloadFunc != nullptr; }
 
 	HMODULE m_Plugin;
+	bool m_DPIAware;
 
 	void* m_ReloadFunc;
 

@@ -15,6 +15,7 @@ std::unordered_map<std::wstring, UINT> MeasurePlugin::s_PluginReferences;
 
 MeasurePlugin::MeasurePlugin(Skin* skin, const WCHAR* name) : Measure(skin, name),
 	m_Plugin(),
+	m_DPIAware(false),
 	m_ReloadFunc(),
 	m_ID(),
 	m_Update2(false),
@@ -205,6 +206,8 @@ void MeasurePlugin::ReadOptions(ConfigParser& parser, const WCHAR* section)
 	m_UpdateFunc = GetProcAddress(m_Plugin, "Update");
 	m_GetStringFunc = GetProcAddress(m_Plugin, "GetString");
 	m_ExecuteBangFunc = GetProcAddress(m_Plugin, "ExecuteBang");
+	const BYTE* dpiAware = (const BYTE*)GetProcAddress(m_Plugin, "DPIAware");
+	m_DPIAware = dpiAware && *dpiAware != 0;
 
 	// Remove current directory from DLL search path
 	SetDllDirectory(L"");

@@ -36,6 +36,23 @@ bool SetStyleTemplateIfNeeded(MeasurePlugin* measure, ConfigParser& parser, LPCW
 	return false;
 }
 
+bool ShouldScalePluginSize(MeasurePlugin* measure, LPCWSTR option)
+{
+	return !measure->IsDPIAware() &&
+		(_wcsicmp(option, L"W") == 0 || _wcsicmp(option, L"H") == 0);
+}
+
+int ScalePluginSize(MeasurePlugin* measure, int value)
+{
+	return measure->GetSkin()->ScaleToDevicePixels(value);
+}
+
+int ReadPluginSize(MeasurePlugin* measure, ConfigParser& parser, LPCWSTR option, int defValue)
+{
+	const int value = parser.ReadInt(measure->GetName(), option, defValue);
+	return ScalePluginSize(measure, value);
+}
+
 LPCWSTR __stdcall RmReadString(void* rm, LPCWSTR option, LPCWSTR defValue, BOOL replaceMeasures)
 {
 	if (!IsMainThread()) return g_NonMainThreadError;
@@ -45,6 +62,14 @@ LPCWSTR __stdcall RmReadString(void* rm, LPCWSTR option, LPCWSTR defValue, BOOL 
 
 	MeasurePlugin* measure = (MeasurePlugin*)rm;
 	ConfigParser& parser = measure->GetSkin()->GetParser();
+	if (ShouldScalePluginSize(measure, option))
+	{
+		WCHAR buffer[32] = { 0 };
+		_itow_s(ReadPluginSize(measure, parser, option, ConfigParser::ParseInt(defValue, 0)), buffer, 10);
+		g_Buffer = buffer;
+		return g_Buffer.c_str();
+	}
+
 	return parser.ReadString(measure->GetName(), option, defValue, replaceMeasures != FALSE).c_str();
 }
 
@@ -74,7 +99,9 @@ double __stdcall RmReadFormula(void* rm, LPCWSTR option, double defValue)
 
 	MeasurePlugin* measure = (MeasurePlugin*)rm;
 	ConfigParser& parser = measure->GetSkin()->GetParser();
-	return parser.ReadFloat(measure->GetName(), option, defValue);
+	return ShouldScalePluginSize(measure, option) ?
+		ReadPluginSize(measure, parser, option, (int)defValue) :
+		parser.ReadFloat(measure->GetName(), option, defValue);
 }
 
 double __stdcall RmReadFormulaFromSection(void* rm, LPCWSTR section, LPCWSTR option, double defValue)
@@ -154,6 +181,16 @@ void* __stdcall RmGet(void* rm, int type)
 			Skin* window = measure->GetSkin();
 			if (!window) break;
 			return (void*)window->GetWindow();
+		}
+
+	case RMG_SKINSCALE:
+		{
+			static float scale = 1.0f;
+			if (!measure) break;
+			Skin* window = measure->GetSkin();
+			if (!window) break;
+			scale = window->GetScale();
+			return (void*)&scale;
 		}
 	}
 
