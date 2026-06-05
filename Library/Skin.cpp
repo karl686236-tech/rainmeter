@@ -536,6 +536,20 @@ void Skin::Refresh(bool init, bool all)
 		ShowBlur();
 	}
 
+	// If this is the initial refresh, we'll be calculating the initial DPI scale
+	// based on the unscaled window size (since m_DpiScale will be 1).
+	const SIZE maybeUnscaledWindowSize = GetScaledWindowSize();
+	const RECT maybeUnscaledScreenRect = {
+		m_ScreenX,
+		m_ScreenY,
+		m_ScreenX + max(1, maybeUnscaledWindowSize.cx),
+		m_ScreenY + max(1, maybeUnscaledWindowSize.cy)
+	};
+
+	const int skinScale = GetRainmeter().GetSkinScale();
+	m_DpiScale = (skinScale > 0) ? (float)skinScale / 100.0f : System::GetDpiScaleForRect(maybeUnscaledScreenRect);
+	UpdateEffectiveScale();
+
 	if (m_KeepOnScreen)
 	{
 		const SIZE scaledWindowSize = GetScaledWindowSize();
@@ -754,7 +768,7 @@ void Skin::MapCoordsToScreen(int& x, int& y, int w, int h)
 		{
 			if (!(*iter).active) continue;
 
-			const RECT r = (*iter).screen;
+			const RECT& r = (*iter).screen;
 			if (pt.x >= r.left && pt.x < r.right && pt.y >= r.top && pt.y < r.bottom)
 			{
 				x = min(x, r.right - w);
@@ -768,7 +782,7 @@ void Skin::MapCoordsToScreen(int& x, int& y, int w, int h)
 
 	// No monitor found for the window -> Use the default work area
 	const int index = System::GetMultiMonitorInfo().primary - 1;
-	const RECT r = monitors[index].work;
+	const RECT& r = monitors[index].work;
 	x = min(x, r.right - w);
 	x = max(x, r.left);
 	y = min(y, r.bottom - h);
